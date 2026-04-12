@@ -15,7 +15,7 @@
 body{
 margin:0;
 font-family:Arial;
-background:linear-gradient(135deg,#e0f3ff,#cfe9ff);
+background:linear-gradient(135deg,#e6f4ff,#d9efff);
 min-height:100vh;
 padding:15px;
 }
@@ -27,7 +27,7 @@ margin-bottom:15px;
 }
 
 .card{
-background:rgba(255,255,255,0.6);
+background:rgba(255,255,255,0.65);
 backdrop-filter:blur(10px);
 border-radius:20px;
 padding:15px;
@@ -60,14 +60,20 @@ border-radius:12px;
 margin-top:10px;
 }
 
-.adminBtn{
-background:white;
+button{
+width:100%;
 padding:12px;
 border-radius:15px;
-text-align:center;
+border:none;
+margin-top:10px;
+background:#8ec9ff;
+color:#003a66;
 font-weight:bold;
-margin-bottom:15px;
 cursor:pointer;
+}
+
+button:active{
+transform:scale(0.95);
 }
 
 input,textarea{
@@ -76,21 +82,6 @@ padding:10px;
 border-radius:10px;
 border:none;
 margin-top:8px;
-}
-
-button{
-width:100%;
-padding:12px;
-border:none;
-border-radius:12px;
-margin-top:10px;
-background:#4da6ff;
-color:white;
-font-weight:bold;
-}
-
-button:active{
-transform:scale(0.95);
 }
 
 .hidden{
@@ -112,9 +103,9 @@ display:none;
 <div class="card">
 
 
-<div class="adminBtn" onclick="showLogin()">
+<button onclick="showLogin()">
 🔐 管理員登入
-</div>
+</button>
 
 
 <div id="loginBox" class="hidden">
@@ -165,9 +156,7 @@ let adminPassword="1234"
 let tasks=JSON.parse(localStorage.getItem("tasks"))||[]
 
 function showLogin(){
-
 document.getElementById("loginBox").classList.toggle("hidden")
-
 }
 
 function login(){
@@ -217,13 +206,9 @@ render()
 }
 
 if(image){
-
 reader.readAsDataURL(image)
-
 }else{
-
 reader.onload()
-
 }
 
 }
