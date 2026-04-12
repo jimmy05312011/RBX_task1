@@ -13,16 +13,31 @@
 <style>
 
 body{
-font-family: Arial, sans-serif;
 margin:0;
-padding:20px;
-background:linear-gradient(135deg,#4facfe,#00f2fe);
+font-family:Arial;
+background:linear-gradient(135deg,#e0f3ff,#cfe9ff);
 min-height:100vh;
+padding:15px;
 }
 
-h1{
-text-align:center;
-color:white;
+.title{
+font-size:24px;
+font-weight:bold;
+margin-bottom:15px;
+}
+
+.card{
+background:rgba(255,255,255,0.6);
+backdrop-filter:blur(10px);
+border-radius:20px;
+padding:15px;
+margin-bottom:15px;
+transition:0.15s;
+box-shadow:0 5px 15px rgba(0,0,0,0.05);
+}
+
+.card:active{
+transform:scale(0.97);
 }
 
 .search{
@@ -30,43 +45,29 @@ width:100%;
 padding:12px;
 border-radius:15px;
 border:none;
-margin-bottom:20px;
-}
-
-.card{
-background:rgba(255,255,255,0.25);
-backdrop-filter: blur(10px);
-padding:15px;
-border-radius:20px;
 margin-bottom:15px;
-color:white;
-transition:0.2s;
-cursor:pointer;
-}
-
-.card:active{
-transform:scale(0.97);
 }
 
 .robux{
+color:#00a86b;
 font-weight:bold;
-color:#00ffae;
-font-size:18px;
+margin-top:5px;
 }
 
-.card img{
+img{
 width:100%;
-border-radius:10px;
+border-radius:12px;
 margin-top:10px;
 }
 
-.admin{
-background:rgba(255,255,255,0.25);
-backdrop-filter: blur(10px);
-padding:15px;
-border-radius:20px;
-margin-bottom:20px;
-color:white;
+.adminBtn{
+background:white;
+padding:12px;
+border-radius:15px;
+text-align:center;
+font-weight:bold;
+margin-bottom:15px;
+cursor:pointer;
 }
 
 input,textarea{
@@ -80,21 +81,20 @@ margin-top:8px;
 button{
 width:100%;
 padding:12px;
-margin-top:10px;
 border:none;
 border-radius:12px;
-background:white;
+margin-top:10px;
+background:#4da6ff;
+color:white;
 font-weight:bold;
-cursor:pointer;
 }
 
 button:active{
 transform:scale(0.95);
 }
 
-.login{
-text-align:center;
-margin-bottom:20px;
+.hidden{
+display:none;
 }
 
 </style>
@@ -106,21 +106,32 @@ margin-bottom:20px;
 <body>
 
 
-<h1>📋 任務查詢系統</h1>
+<div class="title">📋 任務查詢系統</div>
 
 
-<div class="login">
+<div class="card">
 
 
-<input type="password" placeholder="管理員密碼" id="password">
+<div class="adminBtn" onclick="showLogin()">
+🔐 管理員登入
+</div>
 
 
-管理員登入
+<div id="loginBox" class="hidden">
+
+
+<input type="password" id="password" placeholder="輸入管理員密碼">
+
+
+登入
 
 </div>
 
 
-<div id="adminPanel" style="display:none" class="admin">
+</div>
+
+
+<div id="adminPanel" class="card hidden">
 
 
 <h3>新增任務</h3>
@@ -131,6 +142,8 @@ margin-bottom:20px;
 <textarea id="desc" placeholder="說明"></textarea>
 <textarea id="example" placeholder="舉例"></textarea>
 <input id="robux" placeholder="Robux">
+
+
 <input type="file" id="image">
 
 
@@ -147,35 +160,46 @@ margin-bottom:20px;
 
 <script>
 
-let adminPassword = "1234"
+let adminPassword="1234"
 
-let tasks = JSON.parse(localStorage.getItem("tasks")) || []
+let tasks=JSON.parse(localStorage.getItem("tasks"))||[]
+
+function showLogin(){
+
+document.getElementById("loginBox").classList.toggle("hidden")
+
+}
 
 function login(){
 
-let pass = document.getElementById("password").value
+let pass=document.getElementById("password").value
 
-if(pass === adminPassword){
-document.getElementById("adminPanel").style.display="block"
-alert("管理員登入成功")
+if(pass===adminPassword){
+
+document.getElementById("adminPanel").classList.remove("hidden")
+
+alert("登入成功")
+
 }else{
+
 alert("密碼錯誤")
+
 }
 
 }
 
 function addTask(){
 
-let title = document.getElementById("title").value
-let id = document.getElementById("id").value
-let desc = document.getElementById("desc").value
-let example = document.getElementById("example").value
-let robux = document.getElementById("robux").value
-let image = document.getElementById("image").files[0]
+let title=document.getElementById("title").value
+let id=document.getElementById("id").value
+let desc=document.getElementById("desc").value
+let example=document.getElementById("example").value
+let robux=document.getElementById("robux").value
+let image=document.getElementById("image").files[0]
 
-let reader = new FileReader()
+let reader=new FileReader()
 
-reader.onload = function(){
+reader.onload=function(){
 
 tasks.push({
 title,
@@ -193,9 +217,13 @@ render()
 }
 
 if(image){
+
 reader.readAsDataURL(image)
+
 }else{
+
 reader.onload()
+
 }
 
 }
@@ -208,13 +236,15 @@ tasks.forEach(task=>{
 
 html+=`
 
-<div class="card" onclick="clickEffect(this)">
+<div class="card">
 
-<h2>${task.title}</h2>
+<h3>${task.title}</h3>
 
-<p>任務ID：${task.id}</p>
-<p>${task.desc}</p>
-<p>舉例：${task.example}</p>
+<div>任務ID：${task.id}</div>
+
+<div>${task.desc}</div>
+
+<div>舉例：${task.example}</div>
 
 <div class="robux">💰 ${task.robux} Robux</div>
 
@@ -236,7 +266,7 @@ let input=document.querySelector(".search").value.toLowerCase()
 
 let filtered=tasks.filter(task=>
 
-task.title.toLowerCase().includes(input) ||
+task.title.toLowerCase().includes(input)||
 task.id.toLowerCase().includes(input)
 
 )
@@ -249,11 +279,13 @@ html+=`
 
 <div class="card">
 
-<h2>${task.title}</h2>
+<h3>${task.title}</h3>
 
-<p>任務ID：${task.id}</p>
-<p>${task.desc}</p>
-<p>舉例：${task.example}</p>
+<div>任務ID：${task.id}</div>
+
+<div>${task.desc}</div>
+
+<div>舉例：${task.example}</div>
 
 <div class="robux">💰 ${task.robux} Robux</div>
 
@@ -266,16 +298,6 @@ ${task.image ? `<img src="${task.image}">` : ""}
 })
 
 document.getElementById("tasks").innerHTML=html
-
-}
-
-function clickEffect(el){
-
-el.style.transform="scale(0.96)"
-
-setTimeout(()=>{
-el.style.transform="scale(1)"
-},150)
 
 }
 
