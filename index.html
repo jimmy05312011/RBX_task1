@@ -1,78 +1,100 @@
 <!DOCTYPE html>
 
+
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
 <title>任務查詢系統</title>
 
+
 <style>
+
 body{
 font-family: Arial, sans-serif;
-background:#f5f6fa;
+margin:0;
 padding:20px;
+background:linear-gradient(135deg,#4facfe,#00f2fe);
+min-height:100vh;
 }
 
 h1{
 text-align:center;
+color:white;
 }
 
 .search{
 width:100%;
 padding:12px;
+border-radius:15px;
+border:none;
 margin-bottom:20px;
-border-radius:10px;
-border:1px solid #ccc;
 }
 
-.task{
-background:white;
+.card{
+background:rgba(255,255,255,0.25);
+backdrop-filter: blur(10px);
 padding:15px;
-border-radius:12px;
+border-radius:20px;
 margin-bottom:15px;
-box-shadow:0 4px 10px rgba(0,0,0,0.08);
+color:white;
+transition:0.2s;
+cursor:pointer;
 }
 
-.task img{
-max-width:100%;
-border-radius:8px;
-margin-top:10px;
+.card:active{
+transform:scale(0.97);
 }
 
 .robux{
-color:#00b06f;
 font-weight:bold;
+color:#00ffae;
 font-size:18px;
 }
 
-.addTask{
-background:white;
+.card img{
+width:100%;
+border-radius:10px;
+margin-top:10px;
+}
+
+.admin{
+background:rgba(255,255,255,0.25);
+backdrop-filter: blur(10px);
 padding:15px;
-border-radius:12px;
+border-radius:20px;
 margin-bottom:20px;
+color:white;
 }
 
 input,textarea{
 width:100%;
-padding:8px;
-margin:5px 0;
-border-radius:8px;
-border:1px solid #ccc;
+padding:10px;
+border-radius:10px;
+border:none;
+margin-top:8px;
 }
 
 button{
-background:#5865f2;
-color:white;
-padding:10px;
-border:none;
-border-radius:10px;
 width:100%;
+padding:12px;
 margin-top:10px;
+border:none;
+border-radius:12px;
+background:white;
+font-weight:bold;
 cursor:pointer;
 }
 
-button:hover{
-background:#4752c4;
+button:active{
+transform:scale(0.95);
+}
+
+.login{
+text-align:center;
+margin-bottom:20px;
 }
 
 </style>
@@ -87,18 +109,28 @@ background:#4752c4;
 <h1>📋 任務查詢系統</h1>
 
 
-<input type="text" class="search" placeholder="搜尋任務..." onkeyup="searchTask()">
+<div class="login">
 
 
-<div class="addTask">
+<input type="password" placeholder="管理員密碼" id="password">
+
+
+管理員登入
+
+</div>
+
+
+<div id="adminPanel" style="display:none" class="admin">
+
+
 <h3>新增任務</h3>
 
 
-<input type="text" id="title" placeholder="標題">
-<input type="text" id="id" placeholder="任務ID">
-<textarea id="desc" placeholder="任務說明"></textarea>
+<input id="title" placeholder="標題">
+<input id="id" placeholder="任務ID">
+<textarea id="desc" placeholder="說明"></textarea>
 <textarea id="example" placeholder="舉例"></textarea>
-<input type="number" id="robux" placeholder="Robux數">
+<input id="robux" placeholder="Robux">
 <input type="file" id="image">
 
 
@@ -107,12 +139,30 @@ background:#4752c4;
 </div>
 
 
-<div id="taskList"></div>
+<input class="search" placeholder="搜尋任務..." onkeyup="searchTask()">
+
+
+<div id="tasks"></div>
 
 
 <script>
 
+let adminPassword = "1234"
+
 let tasks = JSON.parse(localStorage.getItem("tasks")) || []
+
+function login(){
+
+let pass = document.getElementById("password").value
+
+if(pass === adminPassword){
+document.getElementById("adminPanel").style.display="block"
+alert("管理員登入成功")
+}else{
+alert("密碼錯誤")
+}
+
+}
 
 function addTask(){
 
@@ -126,20 +176,20 @@ let image = document.getElementById("image").files[0]
 let reader = new FileReader()
 
 reader.onload = function(){
-let task = {
+
+tasks.push({
 title,
 id,
 desc,
 example,
 robux,
-image: reader.result
-}
+image:reader.result
+})
 
-tasks.push(task)
-
-localStorage.setItem("tasks", JSON.stringify(tasks))
+localStorage.setItem("tasks",JSON.stringify(tasks))
 
 render()
+
 }
 
 if(image){
@@ -158,14 +208,15 @@ tasks.forEach(task=>{
 
 html+=`
 
-<div class="task">
+<div class="card" onclick="clickEffect(this)">
+
 <h2>${task.title}</h2>
 
-<p><b>任務ID：</b>${task.id}</p>
-<p><b>說明：</b>${task.desc}</p>
-<p><b>舉例：</b>${task.example}</p>
+<p>任務ID：${task.id}</p>
+<p>${task.desc}</p>
+<p>舉例：${task.example}</p>
 
-<p class="robux">💰 ${task.robux} Robux</p>
+<div class="robux">💰 ${task.robux} Robux</div>
 
 ${task.image ? `<img src="${task.image}">` : ""}
 
@@ -175,17 +226,19 @@ ${task.image ? `<img src="${task.image}">` : ""}
 
 })
 
-document.getElementById("taskList").innerHTML = html
+document.getElementById("tasks").innerHTML=html
 
 }
 
 function searchTask(){
 
-let input = document.querySelector(".search").value.toLowerCase()
+let input=document.querySelector(".search").value.toLowerCase()
 
-let filtered = tasks.filter(task =>
+let filtered=tasks.filter(task=>
+
 task.title.toLowerCase().includes(input) ||
 task.id.toLowerCase().includes(input)
+
 )
 
 let html=""
@@ -194,14 +247,15 @@ filtered.forEach(task=>{
 
 html+=`
 
-<div class="task">
+<div class="card">
+
 <h2>${task.title}</h2>
 
-<p><b>任務ID：</b>${task.id}</p>
-<p><b>說明：</b>${task.desc}</p>
-<p><b>舉例：</b>${task.example}</p>
+<p>任務ID：${task.id}</p>
+<p>${task.desc}</p>
+<p>舉例：${task.example}</p>
 
-<p class="robux">💰 ${task.robux} Robux</p>
+<div class="robux">💰 ${task.robux} Robux</div>
 
 ${task.image ? `<img src="${task.image}">` : ""}
 
@@ -211,7 +265,17 @@ ${task.image ? `<img src="${task.image}">` : ""}
 
 })
 
-document.getElementById("taskList").innerHTML = html
+document.getElementById("tasks").innerHTML=html
+
+}
+
+function clickEffect(el){
+
+el.style.transform="scale(0.96)"
+
+setTimeout(()=>{
+el.style.transform="scale(1)"
+},150)
 
 }
 
