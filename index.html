@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>任務查詢系統</title>
+
+<style>
+body{
+font-family: Arial, sans-serif;
+background:#f5f6fa;
+padding:20px;
+}
+
+h1{
+text-align:center;
+}
+
+.search{
+width:100%;
+padding:12px;
+margin-bottom:20px;
+border-radius:10px;
+border:1px solid #ccc;
+}
+
+.task{
+background:white;
+padding:15px;
+border-radius:12px;
+margin-bottom:15px;
+box-shadow:0 4px 10px rgba(0,0,0,0.08);
+}
+
+.task img{
+max-width:100%;
+border-radius:8px;
+margin-top:10px;
+}
+
+.robux{
+color:#00b06f;
+font-weight:bold;
+font-size:18px;
+}
+
+.addTask{
+background:white;
+padding:15px;
+border-radius:12px;
+margin-bottom:20px;
+}
+
+input,textarea{
+width:100%;
+padding:8px;
+margin:5px 0;
+border-radius:8px;
+border:1px solid #ccc;
+}
+
+button{
+background:#5865f2;
+color:white;
+padding:10px;
+border:none;
+border-radius:10px;
+width:100%;
+margin-top:10px;
+cursor:pointer;
+}
+
+button:hover{
+background:#4752c4;
+}
+
+</style>
+
+
+</head>
+
+
+<body>
+
+
+<h1>📋 任務查詢系統</h1>
+
+
+<input type="text" class="search" placeholder="搜尋任務..." onkeyup="searchTask()">
+
+
+<div class="addTask">
+<h3>新增任務</h3>
+
+
+<input type="text" id="title" placeholder="標題">
+<input type="text" id="id" placeholder="任務ID">
+<textarea id="desc" placeholder="任務說明"></textarea>
+<textarea id="example" placeholder="舉例"></textarea>
+<input type="number" id="robux" placeholder="Robux數">
+<input type="file" id="image">
+
+
+新增任務
+
+</div>
+
+
+<div id="taskList"></div>
+
+
+<script>
+
+let tasks = JSON.parse(localStorage.getItem("tasks")) || []
+
+function addTask(){
+
+let title = document.getElementById("title").value
+let id = document.getElementById("id").value
+let desc = document.getElementById("desc").value
+let example = document.getElementById("example").value
+let robux = document.getElementById("robux").value
+let image = document.getElementById("image").files[0]
+
+let reader = new FileReader()
+
+reader.onload = function(){
+let task = {
+title,
+id,
+desc,
+example,
+robux,
+image: reader.result
+}
+
+tasks.push(task)
+
+localStorage.setItem("tasks", JSON.stringify(tasks))
+
+render()
+}
+
+if(image){
+reader.readAsDataURL(image)
+}else{
+reader.onload()
+}
+
+}
+
+function render(){
+
+let html=""
+
+tasks.forEach(task=>{
+
+html+=`
+
+<div class="task">
+<h2>${task.title}</h2>
+
+<p><b>任務ID：</b>${task.id}</p>
+<p><b>說明：</b>${task.desc}</p>
+<p><b>舉例：</b>${task.example}</p>
+
+<p class="robux">💰 ${task.robux} Robux</p>
+
+${task.image ? `<img src="${task.image}">` : ""}
+
+</div>
+
+`
+
+})
+
+document.getElementById("taskList").innerHTML = html
+
+}
+
+function searchTask(){
+
+let input = document.querySelector(".search").value.toLowerCase()
+
+let filtered = tasks.filter(task =>
+task.title.toLowerCase().includes(input) ||
+task.id.toLowerCase().includes(input)
+)
+
+let html=""
+
+filtered.forEach(task=>{
+
+html+=`
+
+<div class="task">
+<h2>${task.title}</h2>
+
+<p><b>任務ID：</b>${task.id}</p>
+<p><b>說明：</b>${task.desc}</p>
+<p><b>舉例：</b>${task.example}</p>
+
+<p class="robux">💰 ${task.robux} Robux</p>
+
+${task.image ? `<img src="${task.image}">` : ""}
+
+</div>
+
+`
+
+})
+
+document.getElementById("taskList").innerHTML = html
+
+}
+
+render()
+
+</script>
+
+
+</body>
+</html>
