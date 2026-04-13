@@ -9,25 +9,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Update tasks.json
         run: |
-          node -e "
-          const fs=require('fs');
-          const data=JSON.parse(fs.readFileSync('tasks.json','utf8'));
-          const newTask=JSON.parse(process.env.TASK);
-          data.push(newTask);
-          fs.writeFileSync('tasks.json', JSON.stringify(data,null,2));
-          "
+          echo "$TASK" > tasks.json
         env:
-          TASK: ${{ github.event.client_payload.task }}
+          TASK: ${{ toJson(github.event.client_payload.taskList) }}
 
-      - name: Commit changes
+      - name: Commit
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add tasks.json
-          git commit -m "add task" || exit 0
+          git commit -m "update" || exit 0
           git push
