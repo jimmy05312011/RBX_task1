@@ -3,14 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>任務查詢系統</title>
+<title>任務系統 V8</title>
 
 <style>
 body{
 margin:0;
 font-family:Arial;
 background:linear-gradient(135deg,#e6f4ff,#d9efff);
-min-height:100vh;
 padding:15px;
 }
 
@@ -21,96 +20,77 @@ margin-bottom:15px;
 }
 
 .card{
-background:rgba(255,255,255,0.65);
-backdrop-filter:blur(10px);
-border-radius:20px;
+background:rgba(255,255,255,0.7);
 padding:15px;
-margin-bottom:15px;
-}
-
-.search{
-width:100%;
-padding:12px;
 border-radius:15px;
-border:none;
-margin-bottom:15px;
-}
-
-.robux{
-color:#00a86b;
-font-weight:bold;
-margin-top:5px;
-}
-
-img{
-width:100%;
-border-radius:12px;
-margin-top:10px;
-}
-
-button{
-width:100%;
-padding:12px;
-border-radius:12px;
-border:none;
-margin-top:8px;
-background:#8ec9ff;
-font-weight:bold;
+margin-bottom:12px;
 }
 
 input,textarea{
 width:100%;
 padding:10px;
+margin-top:8px;
 border-radius:10px;
 border:none;
-margin-top:8px;
 }
 
+button{
+width:100%;
+padding:12px;
+margin-top:8px;
+border:none;
+border-radius:12px;
+background:#8ec9ff;
+font-weight:bold;
+}
+
+img{width:100%;border-radius:10px;margin-top:10px;}
+
 .hidden{display:none;}
+.robux{color:green;font-weight:bold;}
 </style>
 </head>
 
 <body>
 
-<div class="title">📋 任務查詢系統</div>
+<div class="title">📋 任務系統 V8</div>
 
 <div class="card">
-<button onclick="showLogin()">🔐 管理員登入</button>
+<button onclick="showLogin()">🔐 管理員</button>
 
 <div id="loginBox" class="hidden">
-<input type="password" id="password" placeholder="輸入密碼">
+<input id="pw" type="password" placeholder="密碼">
 <button onclick="login()">登入</button>
 </div>
 </div>
 
-<div id="adminPanel" class="card hidden">
+<div id="admin" class="card hidden">
 
 <h3>新增 / 編輯任務</h3>
 
 <input id="title" placeholder="標題">
-<input id="id" placeholder="任務ID">
+<input id="id" placeholder="ID">
 <textarea id="desc" placeholder="說明"></textarea>
-<textarea id="example" placeholder="舉例"></textarea>
+<textarea id="example" placeholder="範例"></textarea>
 <input id="robux" placeholder="Robux">
-<input type="file" id="image">
+<input type="file" id="img">
 
-<button onclick="addTask()">送出</button>
+<button onclick="submitTask()">送出</button>
 
 </div>
 
-<input class="search" placeholder="搜尋任務..." onkeyup="searchTask()">
+<input onkeyup="search()" class="search" placeholder="搜尋任務...">
 
-<div id="tasks"></div>
+<div id="list"></div>
 
 <script>
 
-const repo ＂const repo="jimmy05312011/RBX_task1"
-const token="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"
+const repo="你的帳號/你的repo"
 
 let tasks=[]
 let editIndex=null
 
-async function loadTasks(){
+async function load(){
 const res=await fetch(`https://api.github.com/repos/${repo}/contents/tasks.json`)
 const data=await res.json()
 tasks=JSON.parse(atob(data.content))
@@ -122,59 +102,46 @@ document.getElementById("loginBox").classList.toggle("hidden")
 }
 
 function login(){
-let pass=document.getElementById("password").value
-if(pass==="1234"){
-document.getElementById("adminPanel").classList.remove("hidden")
+if(pw.value==="1234"){
+admin.classList.remove("hidden")
 alert("登入成功")
-}else{
-alert("錯誤")
-}
+}else alert("錯誤")
 }
 
 function render(){
-let html=""
-tasks.forEach((t,i)=>{
-html+=`
+list.innerHTML=tasks.map((t,i)=>`
 <div class="card">
 <h3>${t.title}</h3>
-<div>ID：${t.id}</div>
-<div>${t.desc}</div>
-<div>${t.example}</div>
-<div class="robux">💰 ${t.robux}</div>
-
-${t.image?`<img src="${t.image}">`:""}
-
-<button onclick="editTask(${i})">✏ 編輯</button>
-<button onclick="deleteTask(${i})">🗑 刪除</button>
-
-</div>`
-})
-document.getElementById("tasks").innerHTML=html
-}
-
-function searchTask(){
-let v=document.querySelector(".search").value.toLowerCase()
-
-let f=tasks.filter(t=>
-t.title.toLowerCase().includes(v)||
-t.id.toLowerCase().includes(v)
-)
-
-document.getElementById("tasks").innerHTML=f.map((t,i)=>`
-<div class="card">
-<h3>${t.title}</h3>
-<div>ID：${t.id}</div>
+<div>ID:${t.id}</div>
 <div>${t.desc}</div>
 <div>${t.example}</div>
 <div class="robux">💰 ${t.robux}</div>
 ${t.image?`<img src="${t.image}">`:""}
-<button onclick="editTask(${i})">✏ 編輯</button>
-<button onclick="deleteTask(${i})">🗑 刪除</button>
+
+<button onclick="edit(${i})">✏ 編輯</button>
+<button onclick="del(${i})">🗑 刪除</button>
 </div>
 `).join("")
 }
 
-function editTask(i){
+function search(){
+let v=document.querySelector(".search").value.toLowerCase()
+let f=tasks.filter(t=>t.title.toLowerCase().includes(v)||t.id.toLowerCase().includes(v))
+list.innerHTML=f.map((t,i)=>`
+<div class="card">
+<h3>${t.title}</h3>
+<div>ID:${t.id}</div>
+<div>${t.desc}</div>
+<div>${t.example}</div>
+<div class="robux">💰 ${t.robux}</div>
+${t.image?`<img src="${t.image}">`:""}
+<button onclick="edit(${i})">✏ 編輯</button>
+<button onclick="del(${i})">🗑 刪除</button>
+</div>
+`).join("")
+}
+
+function edit(i){
 let t=tasks[i]
 title.value=t.title
 id.value=t.id
@@ -182,19 +149,19 @@ desc.value=t.desc
 example.value=t.example
 robux.value=t.robux
 editIndex=i
-alert("已載入編輯")
+alert("已載入")
 }
 
-async function deleteTask(i){
+async function del(i){
 if(!confirm("刪除？"))return
 tasks.splice(i,1)
 await save()
 }
 
-async function addTask(){
+async function submitTask(){
 
+let file=img.files[0]
 let reader=new FileReader()
-let file=document.getElementById("image").files[0]
 
 reader.onload=async function(){
 
@@ -215,8 +182,7 @@ tasks.push(obj)
 }
 
 await save()
-alert("完成")
-loadTasks()
+load()
 }
 
 if(file) reader.readAsDataURL(file)
@@ -229,20 +195,17 @@ async function save(){
 await fetch(`https://api.github.com/repos/${repo}/dispatches`,{
 method:"POST",
 headers:{
-"Authorization":"Bearer "+token,
 "Accept":"application/vnd.github+json"
 },
 body:JSON.stringify({
 event_type:"update",
-client_payload:{
-tasks:tasks
-}
+client_payload:{tasks}
 })
 })
 
 }
 
-loadTasks()
+load()
 
 </script>
 
