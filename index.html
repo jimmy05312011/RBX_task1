@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 
 
@@ -62,18 +63,22 @@ margin-top:10px;
 
 button{
 width:100%;
-padding:12px;
+padding:14px;
 border-radius:15px;
 border:none;
 margin-top:10px;
 background:#8ec9ff;
 color:#003a66;
 font-weight:bold;
+font-size:16px;
 cursor:pointer;
+-webkit-appearance:none;
+appearance:none;
+box-shadow:0 4px 10px rgba(0,0,0,0.08);
 }
 
 button:active{
-transform:scale(0.95);
+transform:scale(0.96);
 }
 
 input,textarea{
@@ -114,7 +119,10 @@ display:none;
 <input type="password" id="password" placeholder="輸入管理員密碼">
 
 
-登入
+<button type="button" onclick="login()">
+🔓 登入
+</button>
+
 
 </div>
 
@@ -138,7 +146,10 @@ display:none;
 <input type="file" id="image">
 
 
-新增任務
+<button onclick="addTask()">
+➕ 新增任務
+</button>
+
 
 </div>
 
