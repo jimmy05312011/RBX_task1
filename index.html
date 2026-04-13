@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>任務系統 V8</title>
+<title>任務系統 V9</title>
 
 <style>
 body{
@@ -44,7 +44,11 @@ background:#8ec9ff;
 font-weight:bold;
 }
 
-img{width:100%;border-radius:10px;margin-top:10px;}
+img{
+width:100%;
+border-radius:10px;
+margin-top:10px;
+}
 
 .hidden{display:none;}
 .robux{color:green;font-weight:bold;}
@@ -53,7 +57,7 @@ img{width:100%;border-radius:10px;margin-top:10px;}
 
 <body>
 
-<div class="title">📋 任務系統 V8</div>
+<div class="title">📋 任務系統 V9（穩定版）</div>
 
 <div class="card">
 <button onclick="showLogin()">🔐 管理員</button>
@@ -79,7 +83,7 @@ img{width:100%;border-radius:10px;margin-top:10px;}
 
 </div>
 
-<input onkeyup="search()" class="search" placeholder="搜尋任務...">
+<input class="search" placeholder="搜尋..." onkeyup="search()">
 
 <div id="list"></div>
 
@@ -90,15 +94,16 @@ const repo="你的帳號/你的repo"
 let tasks=[]
 let editIndex=null
 
+// 📥 讀資料
 async function load(){
-const res=await fetch(`https://api.github.com/repos/${repo}/contents/tasks.json`)
-const data=await res.json()
-tasks=JSON.parse(atob(data.content))
+const res=await fetch(`https://raw.githubusercontent.com/${repo}/main/tasks.json`)
+tasks=await res.json()
 render()
 }
 
+// 🔐 登入
 function showLogin(){
-document.getElementById("loginBox").classList.toggle("hidden")
+loginBox.classList.toggle("hidden")
 }
 
 function login(){
@@ -108,6 +113,7 @@ alert("登入成功")
 }else alert("錯誤")
 }
 
+// 📦 顯示
 function render(){
 list.innerHTML=tasks.map((t,i)=>`
 <div class="card">
@@ -116,6 +122,7 @@ list.innerHTML=tasks.map((t,i)=>`
 <div>${t.desc}</div>
 <div>${t.example}</div>
 <div class="robux">💰 ${t.robux}</div>
+
 ${t.image?`<img src="${t.image}">`:""}
 
 <button onclick="edit(${i})">✏ 編輯</button>
@@ -124,6 +131,7 @@ ${t.image?`<img src="${t.image}">`:""}
 `).join("")
 }
 
+// 🔍 搜尋
 function search(){
 let v=document.querySelector(".search").value.toLowerCase()
 let f=tasks.filter(t=>t.title.toLowerCase().includes(v)||t.id.toLowerCase().includes(v))
@@ -135,12 +143,14 @@ list.innerHTML=f.map((t,i)=>`
 <div>${t.example}</div>
 <div class="robux">💰 ${t.robux}</div>
 ${t.image?`<img src="${t.image}">`:""}
+
 <button onclick="edit(${i})">✏ 編輯</button>
 <button onclick="del(${i})">🗑 刪除</button>
 </div>
 `).join("")
 }
 
+// ✏ 編輯
 function edit(i){
 let t=tasks[i]
 title.value=t.title
@@ -152,12 +162,14 @@ editIndex=i
 alert("已載入")
 }
 
+// 🗑 刪除
 async function del(i){
-if(!confirm("刪除？"))return
+if(!confirm("確定刪除？"))return
 tasks.splice(i,1)
 await save()
 }
 
+// 📤 新增/更新
 async function submitTask(){
 
 let file=img.files[0]
@@ -190,19 +202,21 @@ else reader.onload()
 
 }
 
+// 💾 儲存（穩定版核心）
 async function save(){
 
-await fetch(`https://api.github.com/repos/${repo}/dispatches`,{
+await fetch(`https://your-backend-api.com/save`,{
 method:"POST",
 headers:{
-"Accept":"application/vnd.github+json"
+"Content-Type":"application/json"
 },
 body:JSON.stringify({
-event_type:"update",
-client_payload:{tasks}
+repo:repo,
+data:tasks
 })
 })
 
+alert("已更新")
 }
 
 load()
