@@ -14,7 +14,11 @@ min-height:100vh;
 padding:15px;
 }
 
-.title{font-size:24px;font-weight:bold;margin-bottom:15px;}
+.title{
+font-size:24px;
+font-weight:bold;
+margin-bottom:15px;
+}
 
 .card{
 background:rgba(255,255,255,0.65);
@@ -22,7 +26,6 @@ backdrop-filter:blur(10px);
 border-radius:20px;
 padding:15px;
 margin-bottom:15px;
-box-shadow:0 5px 15px rgba(0,0,0,0.05);
 }
 
 .search{
@@ -33,9 +36,17 @@ border:none;
 margin-bottom:15px;
 }
 
-.robux{color:#00a86b;font-weight:bold;margin-top:5px;}
+.robux{
+color:#00a86b;
+font-weight:bold;
+margin-top:5px;
+}
 
-img{width:100%;border-radius:12px;margin-top:10px;}
+img{
+width:100%;
+border-radius:12px;
+margin-top:10px;
+}
 
 button{
 width:100%;
@@ -67,7 +78,7 @@ margin-top:8px;
 <button onclick="showLogin()">🔐 管理員登入</button>
 
 <div id="loginBox" class="hidden">
-<input type="password" id="password" placeholder="密碼">
+<input type="password" id="password" placeholder="輸入密碼">
 <button onclick="login()">登入</button>
 </div>
 </div>
@@ -87,16 +98,17 @@ margin-top:8px;
 
 </div>
 
-<input class="search" placeholder="搜尋..." onkeyup="searchTask()">
+<input class="search" placeholder="搜尋任務..." onkeyup="searchTask()">
 
 <div id="tasks"></div>
 
 <script>
 
-const repo="jimmy05312011/RBX_task1"
-let adminPassword="1234"
+const repo="你的帳號/你的repo"
+const token="你的GitHubToken"
+
 let tasks=[]
-window.editIndex=undefined
+let editIndex=null
 
 async function loadTasks(){
 const res=await fetch(`https://api.github.com/repos/${repo}/contents/tasks.json`)
@@ -111,81 +123,12 @@ document.getElementById("loginBox").classList.toggle("hidden")
 
 function login(){
 let pass=document.getElementById("password").value
-if(pass===adminPassword){
+if(pass==="1234"){
 document.getElementById("adminPanel").classList.remove("hidden")
 alert("登入成功")
-}else alert("錯誤")
-}
-
-async function addTask(){
-
-let title=document.getElementById("title").value
-let id=document.getElementById("id").value
-let desc=document.getElementById("desc").value
-let example=document.getElementById("example").value
-let robux=document.getElementById("robux").value
-let image=document.getElementById("image").files[0]
-
-let reader=new FileReader()
-
-reader.onload=async function(){
-
-let newTask={
-title,id,desc,example,robux,
-image:reader.result||null
-}
-
-let newTasks=[...tasks]
-
-if(window.editIndex!==undefined){
-newTasks[window.editIndex]=newTask
-window.editIndex=undefined
 }else{
-newTasks.push(newTask)
+alert("錯誤")
 }
-
-await updateTasks(newTasks)
-loadTasks()
-alert("完成")
-}
-
-if(image) reader.readAsDataURL(image)
-else reader.onload()
-}
-
-function editTask(i){
-let t=tasks[i]
-document.getElementById("title").value=t.title
-document.getElementById("id").value=t.id
-document.getElementById("desc").value=t.desc
-document.getElementById("example").value=t.example
-document.getElementById("robux").value=t.robux
-window.editIndex=i
-alert("已進入編輯")
-}
-
-async function deleteTask(i){
-if(!confirm("刪除？"))return
-let newTasks=[...tasks]
-newTasks.splice(i,1)
-await updateTasks(newTasks)
-loadTasks()
-}
-
-async function updateTasks(newTasks){
-
-await fetch(`https://api.github.com/repos/${repo}/dispatches`,{
-method:"POST",
-headers:{
-"Authorization":"Bearer 你的TOKEN",
-"Accept":"application/vnd.github+json"
-},
-body:JSON.stringify({
-event_type:"add-task",
-client_payload:{taskList:newTasks}
-})
-})
-
 }
 
 function render(){
@@ -198,10 +141,12 @@ html+=`
 <div>${t.desc}</div>
 <div>${t.example}</div>
 <div class="robux">💰 ${t.robux}</div>
-${t.image?`<img src="${t.image}">`:``}
+
+${t.image?`<img src="${t.image}">`:""}
 
 <button onclick="editTask(${i})">✏ 編輯</button>
 <button onclick="deleteTask(${i})">🗑 刪除</button>
+
 </div>`
 })
 document.getElementById("tasks").innerHTML=html
@@ -209,19 +154,92 @@ document.getElementById("tasks").innerHTML=html
 
 function searchTask(){
 let v=document.querySelector(".search").value.toLowerCase()
-let f=tasks.filter(t=>t.title.toLowerCase().includes(v)||t.id.toLowerCase().includes(v))
-let html=""
-f.forEach((t,i)=>{
-html+=`<div class="card">
+
+let f=tasks.filter(t=>
+t.title.toLowerCase().includes(v)||
+t.id.toLowerCase().includes(v)
+)
+
+document.getElementById("tasks").innerHTML=f.map((t,i)=>`
+<div class="card">
 <h3>${t.title}</h3>
 <div>ID：${t.id}</div>
 <div>${t.desc}</div>
 <div>${t.example}</div>
 <div class="robux">💰 ${t.robux}</div>
-${t.image?`<img src="${t.image}">`:``}
-</div>`
+${t.image?`<img src="${t.image}">`:""}
+<button onclick="editTask(${i})">✏ 編輯</button>
+<button onclick="deleteTask(${i})">🗑 刪除</button>
+</div>
+`).join("")
+}
+
+function editTask(i){
+let t=tasks[i]
+title.value=t.title
+id.value=t.id
+desc.value=t.desc
+example.value=t.example
+robux.value=t.robux
+editIndex=i
+alert("已載入編輯")
+}
+
+async function deleteTask(i){
+if(!confirm("刪除？"))return
+tasks.splice(i,1)
+await save()
+}
+
+async function addTask(){
+
+let reader=new FileReader()
+let file=document.getElementById("image").files[0]
+
+reader.onload=async function(){
+
+let obj={
+title:title.value,
+id:id.value,
+desc:desc.value,
+example:example.value,
+robux:robux.value,
+image:reader.result||null
+}
+
+if(editIndex!==null){
+tasks[editIndex]=obj
+editIndex=null
+}else{
+tasks.push(obj)
+}
+
+await save()
+alert("完成")
+loadTasks()
+}
+
+if(file) reader.readAsDataURL(file)
+else reader.onload()
+
+}
+
+async function save(){
+
+await fetch(`https://api.github.com/repos/${repo}/dispatches`,{
+method:"POST",
+headers:{
+"Authorization":"Bearer "+token,
+"Accept":"application/vnd.github+json"
+},
+body:JSON.stringify({
+event_type:"update",
+client_payload:{
+tasks:tasks
+}
 })
-document.getElementById("tasks").innerHTML=html
+})
+
 }
 
 loadTasks()
